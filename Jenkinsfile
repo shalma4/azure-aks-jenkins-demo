@@ -1,31 +1,27 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE = "shalmaacr.azurecr.io/flask-app:v1"
-    }
-
     stages {
 
-        stage('Checkout') {
+        stage('Clone') {
             steps {
-                checkout scm
+                git branch: 'main', url: 'https://github.com/shalma4/azure-aks-jenkins-demo.git'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build Docker') {
             steps {
-                sh 'docker build -t $IMAGE .'
+                sh 'docker build -t shalmaacr.azurecr.io/flask-app:v1 .'
             }
         }
 
-        stage('Push to ACR') {
+        stage('Push Image') {
             steps {
-                sh 'docker push $IMAGE'
+                sh 'docker push shalmaacr.azurecr.io/flask-app:v1'
             }
         }
 
-        stage('Deploy to AKS') {
+        stage('Deploy') {
             steps {
                 sh 'kubectl apply -f deployment.yaml'
                 sh 'kubectl apply -f service.yaml'

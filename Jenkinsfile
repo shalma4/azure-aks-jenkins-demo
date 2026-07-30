@@ -1,43 +1,35 @@
 pipeline {
-
     agent any
+
+    environment {
+        IMAGE = "shalmaacr.azurecr.io/flask-app:v1"
+    }
 
     stages {
 
         stage('Checkout') {
             steps {
-                git branch: 'main',
-                url: 'https://github.com/shalma4/azure-aks-jenkins-demo.git'
+                checkout scm
             }
         }
 
-
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                sh '''
-                docker build -t shalma/log-analyzer:v1 .
-                '''
+                sh 'docker build -t $IMAGE .'
             }
         }
 
-
-        stage('Push') {
+        stage('Push to ACR') {
             steps {
-                sh '''
-                docker push shalma/log-analyzer:v1
-                '''
+                sh 'docker push $IMAGE'
             }
         }
-
 
         stage('Deploy to AKS') {
             steps {
-                sh '''
-                kubectl apply -f deployment.yaml
-                kubectl apply -f service.yaml
-                '''
+                sh 'kubectl apply -f deployment.yaml'
+                sh 'kubectl apply -f service.yaml'
             }
         }
-
     }
 }
